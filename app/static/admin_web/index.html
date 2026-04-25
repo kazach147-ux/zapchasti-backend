@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZP-APP ADMIN</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: #000; color: #fff; }
+        .header { position: sticky; top: 0; z-index: 1000; background: #1a1a1a; border-bottom: 1px solid #333; }
+        .nav-scroll { display: flex; overflow-x: auto; gap: 10px; padding: 12px; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .nav-btn { padding: 8px 18px; border-radius: 20px; border: 1px solid #444; background: #222; color: #ccc; cursor: pointer; font-weight: bold; }
+        .nav-btn.active { background: #0056b3; color: white; border-color: #0056b3; }
+        .sync-btn { background: #c0392b !important; color: white !important; border: none; }
+        
+        .section { padding: 10px; padding-bottom: 80px; }
+        .modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+        .modal-content { background: #1a1a1a; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid #333; }
+        
+        input, select, textarea { 
+            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #333; 
+            background: #222; color: #fff; font-size: 16px !important; box-sizing: border-box; 
+        }
+        label { font-size: 12px; color: #888; display: block; margin-bottom: 5px; }
+        .btn-save { background: #27ae60; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-close { background: #444; color: white; border: none; padding: 10px; border-radius: 10px; margin-top: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px;">
+            <span style="font-weight:900; font-size:20px; color:#0056b3;">ZP-APP <span style="color:#fff; font-size:14px;">v2.1</span></span>
+            <div style="display:flex; gap:15px; align-items:center;">
+                <span id="langDisplay" style="font-weight:bold; font-size:12px; background:#333; padding:4px 10px; border-radius:6px; border:1px solid #444;">UA</span>
+                <button id="settingsBtn" style="background:none; border:none; font-size:24px; cursor:pointer;">⚙️</button>
+            </div>
+        </div>
+        <div class="nav-scroll">
+            <button id="btnOrders" class="nav-btn active" data-section="orders-section">Замовлення</button>
+            <button id="btnProducts" class="nav-btn" data-section="products-section">Товари</button>
+            <button id="btnClients" class="nav-btn" data-section="clients-section">Клієнти</button>
+            <button id="btnSms" class="nav-btn" data-section="sms-section">SMS</button>
+            <button id="runImport" class="nav-btn sync-btn">🔄 XML IMPORT</button>
+        </div>
+        <div id="import-status" style="text-align:center; font-size:11px; padding:5px; background:#c0392b; color:white; display:none;"></div>
+    </div>
+
+    <div class="workzone">
+        <div id="orders-section" class="section">
+            <div id="orders-container"></div>
+        </div>
+        
+        <div id="products-section" class="section" style="display:none;">
+            <input type="text" id="product-search" placeholder="Пошук по SKU або назві...">
+            <div id="products-list"></div>
+        </div>
+
+        <div id="clients-section" class="section" style="display:none;">
+            <div id="clients-list"></div>
+        </div>
+
+        <div id="sms-section" class="section" style="display:none;">
+            <div style="background:#1a1a1a; padding:20px; border-radius:12px; border:1px solid #333;">
+                <label>Текст розсилки:</label>
+                <textarea id="sms-text" rows="6" placeholder="Введіть текст для всіх клієнтів..."></textarea>
+                <button id="sendBulkSms" style="width:100%; padding:15px; background:#0056b3; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">🚀 ВІДПРАВИТИ ВСІМ</button>
+                <div id="sms-status" style="margin-top:15px; text-align:center; font-weight:bold;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin:0 0 20px 0; color:#0056b3;">Налаштування</h3>
+            
+            <label>Мова інтерфейсу:</label>
+            <select id="cfg-lang">
+                <option value="uk">Українська</option>
+                <option value="ru">Русский</option>
+            </select>
+
+            <label>URL Бэкенда (Render):</label>
+            <input type="text" id="cfg-server" placeholder="https://zapchasti-backend.onrender.com">
+
+            <label>Адмін Пароль:</label>
+            <input type="password" id="cfg-pass" placeholder="Введіть пароль">
+
+            <label>Nova Poshta API Key:</label>
+            <input type="text" id="cfg-npkey">
+
+            <label>SMS Service Key:</label>
+            <input type="text" id="cfg-smskey">
+
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+                <button id="settingsSave" class="btn-save">ЗБЕРЕГТИ ТА ОНОВИТИ</button>
+                <button id="closeSettings" class="btn-close">ЗАКРИТИ</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="orders.js"></script>
+    <script src="products.js"></script>
+    <script src="clients.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        // Быстрое управление модалкой прямо здесь
+        const modal = document.getElementById('settingsModal');
+        document.getElementById('settingsBtn').onclick = () => modal.style.display = 'flex';
+        document.getElementById('closeSettings').onclick = () => modal.style.display = 'none';
+        window.onclick = (e) => { if(e.target == modal) modal.style.display = 'none'; };
+    </script>
+</body>
+</html>
