@@ -15,4 +15,4 @@ pytz==2025.2
 apscheduler==3.9.1
 aiofiles==23.2.1
 gunicorn
-aiogram==3.4.1
+aiogram==2.25.1
