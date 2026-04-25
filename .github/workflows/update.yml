@@ -1,26 +1,37 @@
 name: Auto Update
+
 on:
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
+
       - name: Install dependencies
-        run: pip install requests beautifulsoup4
+        run: pip install requests beautifulsoup4 lxml
+
       - name: Run updater
+        env:
+          TATA_COOKIES: ${{ secrets.TATA_COOKIES }}
         run: python updater.py
+
       - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add database_ready.json
-          git commit -m "Auto-update database" || echo "No changes to commit"
+          git commit -m "Auto-update database $(date)" || echo "No changes to commit"
           git push
